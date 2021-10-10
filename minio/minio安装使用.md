@@ -1,0 +1,408 @@
+### 官网文档:
+
+https://min.io/ (英文文档, 建议使用)
+
+http://www.minio.org.cn/ (中文文档, 未更新, 错漏问题)
+
+
+
+### 安装
+
+#### docker
+
+```bash
+# 需要翻墙下载镜像
+docker pull quay.io/minio/minio
+
+docker run -d \
+  -p 9000:9000 \
+  -p 9001:9001 \
+  --name minio \
+  -v /Users/zengweixiong/work/server/minio/data:/data \
+  -v /Users/zengweixiong/work/server/minio/config:/root/.minio \
+  -e "MINIO_ROOT_USER=admin" \
+  -e "MINIO_ROOT_PASSWORD=123456" \
+  quay.io/minio/minio server /data --console-address ":9001"
+
+```
+
+
+
+#### docker-compose 集群部署
+
+```yaml
+version: '3.7'
+
+# Settings and configurations that are common for all containers
+x-minio-common: &minio-common
+  image: quay.io/minio/minio:latest
+  command: server --console-address ":9001" http://minio{1...4}/data{1...2}
+  expose:
+    - "9000"
+    - "9001"
+  environment:
+    MINIO_ROOT_USER: admin
+    MINIO_ROOT_PASSWORD: 123456
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+    interval: 30s
+    timeout: 20s
+    retries: 3
+
+# starts 4 docker containers running minio server instances.
+# using nginx reverse proxy, load balancing, you can access
+# it through port 9000.
+services:
+  minio1:
+    <<: *minio-common
+    hostname: minio1
+    volumes:
+      - data1-1:/data1
+      - data1-2:/data2
+
+  minio2:
+    <<: *minio-common
+    hostname: minio2
+    volumes:
+      - data2-1:/data1
+      - data2-2:/data2
+
+  minio3:
+    <<: *minio-common
+    hostname: minio3
+    volumes:
+      - data3-1:/data1
+      - data3-2:/data2
+
+  minio4:
+    <<: *minio-common
+    hostname: minio4
+    volumes:
+      - data4-1:/data1
+      - data4-2:/data2
+
+  nginx:
+    image: nginx:1.19.2-alpine
+    hostname: nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    depends_on:
+      - minio1
+      - minio2
+      - minio3
+      - minio4
+
+## By default this config uses default local driver,
+## For custom volumes replace with volume driver configuration.
+volumes:
+  data1-1:
+  data1-2:
+  data2-1:
+  data2-2:
+  data3-1:
+  data3-2:
+  data4-1:
+  data4-2:
+```
+
+
+
+#### 高可用生产环境搭建
+
+......
+
+
+
+### SpringBoot集成
+
+#### 引入依赖
+
+```xml
+<dependency>
+    <groupId>io.minio</groupId>
+    <artifactId>minio</artifactId>
+    <version>8.2.1</version>
+</dependency>
+```
+
+#### yml配置
+
+```yaml
+minio:
+  endpoint: http://127.0.0.1:9000
+  accessKey: admin
+  secretKey: 123456
+  bucketName: test
+```
+
+#### 代码
+
+##### MinioProperties.java
+
+```java
+/**
+ * Minio配置
+ *
+ * @description:
+ * @author: zengweixiong
+ * @createDate: 2021/10/9 22:40
+ * @version: 1.0
+ */
+@Data
+@Component
+@ConfigurationProperties(prefix = MinioProperties.PREFIX)
+public class MinioProperties {
+    /**
+     * minio yml配置前缀
+     */
+    public static final String PREFIX = "minio";
+
+    /**
+     * minio服务器的URL
+     */
+    private String endpoint;
+
+    /**
+     * access Key
+     */
+    private String accessKey;
+
+    /**
+     * secret Key
+     */
+    private String secretKey;
+}
+```
+
+##### MinioConfig.java
+
+```java
+/**
+ * minio 配置
+ *
+ * @description:
+ * @author: zengweixiong
+ * @createDate: 2021/10/9 22:54
+ * @version: 1.0
+ */
+@Configuration
+public class MinioConfig {
+
+    @Autowired
+    private MinioProperties minioProperties;
+
+    /**
+     * 创建minio客户端
+     *
+     * @return MinioClient
+     */
+    @Bean
+    public MinioClient minioClient() {
+        return MinioClient.builder()
+                .endpoint(minioProperties.getEndpoint())
+                .credentials(minioProperties.getAccessKey(), minioProperties.getSecretKey())
+                .build();
+    }
+
+}
+
+```
+
+##### MinioController.java
+
+```java
+/**
+ * demo测试API
+ *
+ * @description:
+ * @author: zengweixiong
+ * @createDate: 2021/10/9 22:58
+ * @version: 1.0
+ */
+@Slf4j
+@RestController
+@RequestMapping("/minio")
+public class MinioController {
+
+    @Autowired
+    private MinioClient minioClient;
+
+    @Value("${minio.bucketName}")
+    private String bucketName;
+
+    @GetMapping("/list")
+    public List<Object> list() throws Exception {
+        bucketExists(bucketName);
+        //获取bucket列表
+        Iterable<Result<Item>> myObjects = minioClient.listObjects(
+                ListObjectsArgs.builder().bucket(bucketName).build());
+        Iterator<Result<Item>> iterator = myObjects.iterator();
+        List<Object> items = new ArrayList<>();
+        Map<String, String> map;
+        while (iterator.hasNext()) {
+            Item item = iterator.next().get();
+            map = new HashMap<>(2);
+            map.put("fileSize", formatFileSize(item.size()));
+            map.put("fileName", item.objectName());
+            items.add(map);
+        }
+        return items;
+    }
+
+    @PostMapping("upload")
+    public Map<String, Object> upload(@RequestParam(name = "file", required = false) MultipartFile[] files) {
+        Map<String, Object> map = new HashMap<>(2);
+        List<String> orgFileNames = null;
+        try {
+            if (null == files || files.length == 0) {
+                map.put("ERROR", "上传文件不能为空");
+                return map;
+            }
+            bucketExists(bucketName);
+
+            orgFileNames = new ArrayList<>(files.length);
+            String fileName;
+            for (MultipartFile file : files) {
+                fileName = file.getOriginalFilename();
+                orgFileNames.add(fileName);
+                InputStream is = file.getInputStream();
+                minioClient.putObject(PutObjectArgs.builder()
+                        // bucketName
+                        .bucket(bucketName)
+                        // 文件目录
+                        .object("/2021/10/09/" + fileName)
+                        // 流上传
+                        .stream(is, file.getSize(), -1)
+                        // 文件类型
+                        .contentType(file.getContentType())
+                        .build());
+                is.close();
+            }
+        } catch (MinioException e) {
+            System.out.println("Error occurred: " + e);
+            System.out.println("HTTP trace: " + e.httpTrace());
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeyException e) {
+            e.printStackTrace();
+        }
+
+        map.put("bucketName", bucketName);
+        map.put("filenames", orgFileNames);
+        return map;
+    }
+
+    @GetMapping("/download/{fileName}")
+    public void download(HttpServletResponse response, @PathVariable("fileName")
+            String fileName) {
+        InputStream in = null;
+        try {
+            // 获取对象信息
+            StatObjectResponse stat = minioClient.statObject(
+                    StatObjectArgs.builder().bucket(bucketName).object(fileName).build());
+            response.setContentType(stat.contentType());
+            response.setHeader("Content-Disposition", "attachment;filename=" +
+                    URLEncoder.encode(fileName, "UTF-8"));
+            //文件下载
+            in = minioClient.getObject(GetObjectArgs
+                    .builder()
+                    .bucket(bucketName)
+                    .object(fileName)
+                    .build());
+            IOUtils.copy(in, response.getOutputStream());
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    log.error(e.getMessage());
+                }
+            }
+        }
+    }
+
+
+    @DeleteMapping("/delete/{fileName}")
+    public String delete(@PathVariable("fileName") String fileName) {
+        try {
+            minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucketName).object(fileName).build());
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return "删除失败";
+        }
+        return "删除成功";
+    }
+
+
+    /**
+     * 查询 bucketName 是否存在, 没有创建
+     */
+    private void bucketExists(String bucketName) throws
+            ServerException, InsufficientDataException, ErrorResponseException,
+            IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException,
+            XmlParserException, InternalException {
+        // 查询 bucketName 是否存在, 没有创建
+        boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
+        if (!found) {
+            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+        }
+    }
+
+    private static String formatFileSize(long fileS) {
+        DecimalFormat df = new DecimalFormat("#.00");
+        String fileSizeString = "";
+        String wrongSize = "0B";
+        if (fileS == 0) {
+            return wrongSize;
+        }
+        if (fileS < 1024) {
+            fileSizeString = df.format((double) fileS) + " B";
+        } else if (fileS < 1048576) {
+            fileSizeString = df.format((double) fileS / 1024) + " KB";
+        } else if (fileS < 1073741824) {
+            fileSizeString = df.format((double) fileS / 1048576) + " MB";
+        } else {
+            fileSizeString = df.format((double) fileS / 1073741824) + " GB";
+        }
+        return fileSizeString;
+    }
+
+
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
