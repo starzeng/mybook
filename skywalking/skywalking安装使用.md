@@ -2,11 +2,11 @@
 
  https://skywalking.apache.org/downloads/
 
-![image-20210915121816559](/Users/zengweixiong/work/mybook/skywalking/images/image-20210915121816559.png)
+![image-20210915121816559](images/image-20210915121816559.png)
 
 #### 下载tar包解压, 目录简介
 
-![clipboard](/Users/zengweixiong/work/mybook/skywalking/images/clipboard.png)
+![clipboard](images/clipboard.png)
 
 #### 配置修改
 
@@ -14,7 +14,7 @@
 
 打开 ***config/application.yml*** 文件
 
-![image-20210915122618095](/Users/zengweixiong/work/mybook/skywalking/images/image-20210915122618095.png)
+![image-20210915122618095](images/image-20210915122618095.png)
 
 ##### agent配置添加日志文件,
 
@@ -39,7 +39,7 @@ plugin.toolkit.log.grpc.reporter.upstream_timeout=${SW_GRPC_LOG_GRPC_UPSTREAM_TI
 
 注意HOST和PROT
 
-![image-20210915122734931](/Users/zengweixiong/work/mybook/skywalking/images/image-20210915122734931.png)
+![image-20210915122734931](images/image-20210915122734931.png)
 
 
 
@@ -150,9 +150,9 @@ plugin.toolkit.log.grpc.reporter.upstream_timeout=${SW_GRPC_LOG_GRPC_UPSTREAM_TI
 
 #### 效果展示
 
-![image-20210915124510230](/Users/zengweixiong/work/mybook/skywalking/images/image-20210915124510230.png)
+![image-20210915124510230](images/image-20210915124510230.png)
 
-![image-20210915134946270](/Users/zengweixiong/work/mybook/skywalking/images/image-20210915134946270.png)
+![image-20210915134946270](images/image-20210915134946270.png)
 
 
 

@@ -24,11 +24,11 @@
 
 ​	下载Release的 mqtt-xmeter jar包。
 
-![image-20210920123453632](/Users/zengweixiong/work/mybook/JMeter/images/image-20210920123453632.png)
+![image-20210920123453632](./images/image-20210920123453632.png)
 
 ​	重启JMeter，查看是否安装成功。
 
-![image-20210920123553761](/Users/zengweixiong/work/mybook/JMeter/images/image-20210920123553761.png)
+![image-20210920123553761](./images/image-20210920123553761.png)
 
 ### 二. 使用
 
@@ -38,19 +38,19 @@
 
 ##### 1）新建线程组
 
-![image-20210920124059404](/Users/zengweixiong/work/mybook/JMeter/images/image-20210920124059404.png)
+![image-20210920124059404](./images/image-20210920124059404.png)
 
 
 
 ##### 2）新建mqtt链接取样
 
-![image-20210920124215153](/Users/zengweixiong/work/mybook/JMeter/images/image-20210920124215153.png)
+![image-20210920124215153](./images/image-20210920124215153.png)
 
 
 
 ##### 3）填写测试信息
 
-![image-20210920130244264](/Users/zengweixiong/work/mybook/JMeter/images/image-20210920130244264.png)
+![image-20210920130244264](./images/image-20210920130244264.png)
 
 槽点：attampt啥意思，attempt才是吧
 
@@ -58,7 +58,7 @@
 
 ##### 4）添加结果树和汇总报告
 
-![image-20210920124638234](/Users/zengweixiong/work/mybook/JMeter/images/image-20210920124638234.png)
+![image-20210920124638234](./images/image-20210920124638234.png)
 
 ##### 5）压测效果
 
