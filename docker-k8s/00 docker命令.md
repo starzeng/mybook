@@ -1,9 +1,12 @@
 ## **一、docker常用命令**
 
-```
+```bash
 docker --help #查看docker命令
 docker info #docker 详细信息，镜像和容器
 docker version #查看docker版本
+
+# 清理none镜像
+docker image prune
 ```
 
 > 帮助文档地址：https://docs.docker.com/reference/
@@ -31,7 +34,7 @@ docker images --no-trunc#显示完整的镜像信息
 
 示例：
 
-```
+```bash
 [root@izbp1hcw0fjg64l58525bqz ~]# docker images -q
 d1165f221234
 [root@izbp1hcw0fjg64l58525bqz ~]# docker images --digests
