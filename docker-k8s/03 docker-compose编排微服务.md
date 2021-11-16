@@ -15,6 +15,8 @@ services:
       - 8082:8082
     volumes:
       - /etc/localtime:/etc/localtime:ro #同步宿主机与容器时间
+      # 宿主机上执行命令: echo 'Asia/Shanghai' > /etc/timezone
+      - /etc/timezone:/etc/timezone:ro # 同步时区, 防止jvm时区部位 Asia/Shanghai
     environment:
       - JAVA_TOOL_OPTIONS=-Xmx512m -Xms512m -XX:MaxMetaspaceSize=512m
     cap_add:
