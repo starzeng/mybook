@@ -21,7 +21,12 @@ services:
       - JAVA_TOOL_OPTIONS=-Xmx512m -Xms512m -XX:MaxMetaspaceSize=512m
     cap_add:
       - SYS_PTRACE #这个参数是让docker能支持在容器里能执行jdk自带的类似jinfo，jmap这些命令
-
+    deploy:
+      resources: # 使用资源
+        limits:
+          memory: 512M # 内存最大
+        reservations:
+          memory: 300M # 预留
 ```
 
 
