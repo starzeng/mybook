@@ -1,14 +1,18 @@
 ## 在 Linux 上以 All-in-One 模式安装 KubeSphere
 
+**[官网安装教程](https://kubesphere.com.cn/docs/v3.3/quick-start/all-in-one-on-linux/)**
 
+**笔记只记录简单安装, 原理和架构图请看官网文档**
 
-https://kubesphere.com.cn/docs/v3.3/quick-start/all-in-one-on-linux/
+**了解架构原理出了问题才能更好的解决**
 
+<img src="images/image-20220705210820482.png" alt="image-20220705210820482" style="zoom: 33%;" />
 
+### 1. 安装条件
 
-### 1. 安装前提
+**纯净的centos7系统**
 
-**配置纯净的centos7系统**
+配置最好 **CPU8核 16G内存 50G磁盘** 以上
 
 **查看系统信息**
 
@@ -40,6 +44,7 @@ https://kubesphere.com.cn/docs/v3.3/quick-start/all-in-one-on-linux/
 ```bash
 [root@kubeshpere ~]# systemctl stop firewalld
 [root@kubeshpere ~]# systemctl disable firewalld
+[root@kubeshpere ~]# systemctl status firewalld
 ```
 
 **关闭 selinux**
@@ -60,7 +65,7 @@ https://kubesphere.com.cn/docs/v3.3/quick-start/all-in-one-on-linux/
 ```bash
 # 临时关闭 swapoff ‐a 
 # 永久关闭
-[root@kubeshpere ~]# vim /etc/fstab 
+[root@kubeshpere ~]# vim /etc/fstab
 # 注释掉swap这行 
 # /dev/mapper/centos‐swap swap swap defaults 0 0
 #重启生效 free‐m 查看下swap交换区是否都为0，如果都为0则swap关闭成功
@@ -84,16 +89,35 @@ EOF
 **确认可以使用 sudo curl openssl tar 命令**
 
 ```shell
-[root@kubeshpere ~]# yum install socat
+[root@kubeshpere ~]# yum install -y socat
 
-[root@kubeshpere ~]# yum install conntrack
+[root@kubeshpere ~]# yum install -y conntrack
 ```
 
 **请确保 `/etc/resolv.conf` 中的 DNS 地址可用**
 
+**配置docker镜像加速，这里配置阿里云镜像加速 [从阿里云获取加速器地址](https://www.alibabacloud.com/help/zh/doc-detail/60750.htm?spm=a2c63.p38356.b99.18.4f4133f0uTKb8S)**
+
+````bash
+[root@kubeshpere ~]# sudo mkdir -p /etc/docker
+
+[root@kubeshpere ~]# sudo tee /etc/docker/daemon.json <<-'EOF'
+{
+   "registry-mirrors": [
+       "https://fwprcl4o.mirror.aliyuncs.com",
+       "http://hub-mirror.c.163.com"
+   ]
+}
+EOF
+
+[root@kubeshpere ~]# sudo systemctl daemon-reload
+````
 
 
-### 2. 下载 KubeKey
+
+### 2. 下载安装
+
+需要合适的网络访问github, 如果不行可以下载安装包解压安装, 方法参考官网下载的shell脚本内容
 
 访问受限先执行: **export KKZONE=cn**
 
@@ -147,7 +171,133 @@ Password: P@88w0rd
 
 
 
-### 4. 启动可插拔组件
+### 4. 宕机重启设置
+
+一般情况下, 服务器在重启的时候 docker 和 k8s 会自愈,  kubesphere也会自动回复运行。
+
+所以我们只需要**设置 docker 和 k8s 开机重启**就行了。
+
+执行以下命令, 开机后稍等一段时间就可以访问kubesphere了
+
+```bash
+[root@kubeshpere ks]# systemctl enable kubelet
+
+[root@kubeshpere ks]# systemctl enable docker
+```
+
+
+
+查看k8s集群pod状态
+
+```bash
+[root@kubeshpere ks]# kubectget pod --all-namespaces
+```
+
+
+
+### 5. 部署 nginx 例子
+
+#### 1> 开启项目网关
+
+**打开项目设置 > 网关设置**
+
+![image-20220705210144784](images/image-20220705210144784.png)
+
+**直接点击确定**
+
+![image-20220705210214755](images/image-20220705210214755.png)
+
+**创建成功**
+
+![image-20220705210327267](images/image-20220705210327267.png)
+
+
+
+#### 2> 声明存储卷
+
+**存储 > 存储卷**
+
+![image-20220705221801871](images/image-20220705221801871.png)
+
+![image-20220705221838771](images/image-20220705221838771.png)
+
+![image-20220705221912360](images/image-20220705221912360.png)
+
+![image-20220705221929738](images/image-20220705221929738.png)
+
+![image-20220705221951119](images/image-20220705221951119.png)
+
+
+
+#### 3> 创建服务
+
+**左菜单栏: 应用负载 > 服务** 
+
+![image-20220705212442811](images/image-20220705212442811.png)
+
+**创建无状态服务**
+
+![image-20220705212542232](images/image-20220705212542232.png)
+
+![image-20220705215531816](images/image-20220705215531816.png)
+
+#### 4> 添加容器
+
+![image-20220705215900806](images/image-20220705215900806.png)
+
+**选择nginx:latest 并使用默认端口**
+
+![image-20220705220716277](images/image-20220705220716277.png)
+
+![image-20220705220807138](images/image-20220705220807138.png)
+
+
+
+![image-20220705220933671](images/image-20220705220933671.png)
+
+
+
+![image-20220705222216433](images/image-20220705222216433.png)
+
+**选择存储卷**
+
+![image-20220705222303116](images/image-20220705222303116.png)
+
+
+
+![image-20220705222348474](images/image-20220705222348474.png)
+
+
+
+![image-20220705222410178](images/image-20220705222410178.png)
+
+![image-20220705222457193](images/image-20220705222457193.png)
+
+
+
+#### 5> 创建成功编辑外部访问
+
+![image-20220705222535807](images/image-20220705222535807.png) 
+
+![image-20220705222557000](images/image-20220705222557000.png)
+
+
+
+![image-20220705222639114](images/image-20220705222639114.png)
+
+
+
+#### 6> 浏览器访问
+
+![image-20220705222728336](images/image-20220705222728336.png)
+
+大功告成
+
+![image-20220705222814399](images/image-20220705222814399.png)
+
+
+
+### 6. 启动可插拔组件
 
 https://kubesphere.com.cn/docs/v3.3/pluggable-components/overview/
 
@@ -203,7 +353,9 @@ kubectl logs -n kubesphere-system $(kubectl get pod -n kubesphere-system -l 'app
 
 
 
+### 6. devops(重点)
 
+未完待续......
 
 
 
