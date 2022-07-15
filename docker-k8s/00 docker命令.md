@@ -172,14 +172,14 @@ docker logs --since="2021-08-10" --tail=10 redis
 
 方式一
 
-```
-docker exec -it 容器id bashShell
+```bash
+docker exec -it 容器id bash
 ```
 
 方式二
 
-```
-docker attach 容器id bashShell(/bin/bash)
+```bash
+docker attach 容器id bash(/bin/bash)
 ```
 
 exec：进入容器后，开启一个新的终端，可以再里面操作；
