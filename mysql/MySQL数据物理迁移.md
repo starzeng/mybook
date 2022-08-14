@@ -61,3 +61,6 @@ mysqldump --host=h1 -uroot -proot -C --databases test |mysql --host=h2 -uroot -p
 
 ```
 
+### 三. 阿里云DTS迁移
+
+![image-20220813084544041](images/image-20220813084544041.png)
