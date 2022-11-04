@@ -1,9 +1,16 @@
 ## **一、docker常用命令**
 
-```bash
+```shell
 docker --help #查看docker命令
 docker info #docker 详细信息，镜像和容器
 docker version #查看docker版本
+
+docker build -t nginx:latest
+
+docker build -t registry.cn-shanghai.aliyuncs.com/wxay/platform-manager-api:1.0.0 ./platform-manager-api
+sudo docker login --username=1369866181@qq.com registry.cn-shanghai.aliyuncs.com
+docker push registry.cn-shanghai.aliyuncs.com/wxay/waxy-oneid-server:1.0.0
+docker pull registry.cn-shanghai.aliyuncs.com/wxay/waxy-oneid-server:1.0.0
 
 # 清理none镜像
 docker image prune

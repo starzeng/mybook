@@ -67,7 +67,7 @@ hostnamectl set-hostname <hostname>
 [root@k8s-master ~]# cat >> /etc/hosts << EOF
 192.168.31.251 k8s‐master
 192.168.31.190 k8s‐node1
-192.168.31.118 k8s‐node2 
+192.168.31.118 k8s‐node2
 EOF
 
 ```
@@ -97,15 +97,21 @@ EOF
 #### 8. 添加k8s yum源, 注意在浏览器检查url是否正确
 
 ```bash
-[root@k8s-master ~]# cat >> /etc/yum.repos.d/kubernetes.repo << EOF
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
 baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
 enabled=1
-gpgcheck=0
-repo_gpgcheck=0
+gpgcheck=1
+repo_gpgcheck=1
 gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
 EOF
+
+setenforce 0
+
+yum install -y kubelet kubeadm kubectl
+
+systemctl enable kubelet && systemctl start kubelet
 
 [root@k8s-master ~]# yum makecache
 ```
@@ -199,6 +205,8 @@ To see the stack trace of this error execute with --v=5 or higher
 [root@k8s-master ~]# mkdir -p $HOME/.kube
 [root@k8s-master ~]# sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 [root@k8s-master ~]# sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+export KUBECONFIG=/etc/kubernetes/admin.conf
 
 [root@k8s-master ~]# kubectl apply -f  https://docs.projectcalico.org/manifests/calico.yaml
 # 如果上面这个calico网络插件安装不成功可以试下下面这个
