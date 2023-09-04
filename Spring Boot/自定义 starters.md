@@ -4,7 +4,7 @@
 
 ### 什么是 Spring Boot Starter
 
-tarter 是一个启动器，包含多个依赖，方便依赖配置
+starter 是一个启动器，包含多个依赖，方便依赖配置
 
 
 
@@ -22,7 +22,7 @@ https://docs.spring.io/spring-boot/docs/2.3.12.RELEASE/reference/html/spring-boo
 
 ### 命名规范
 
-官方：	以 spring-boot-starter 前缀
+官方：	以 spring-boot-starter **前缀**
 
 **自定义：以 spring-boot-starter 后缀**
 
@@ -42,15 +42,15 @@ own-spring-boot-starter
 
 **工程目录图**
 
-<img src="images/image-20220719122247352.png" alt="image-20220719122247352" style="zoom: 33%;" />
+<img src="images/image-20220719122247352.png" alt="image-20220719122247352" style="zoom: 50%;" />
 
 
 
 ##### own-spring-boot-starter
 
-![image-20220719124058805](images/image-20220719124058805.png)
+<img src="images/image-20220719124058805.png" alt="image-20220719124058805"  />
 
-只有pom文件，注意：packaging 值为 pom
+只有pom文件，注意：**packaging 值为 pom**
 
 ###### pom.xml
 
@@ -95,7 +95,7 @@ own-spring-boot-starter
 
 ##### hello-spring-boot-starter
 
-![image-20220719124003688](images/image-20220719124003688.png)
+<img src="images/image-20220719124003688.png" alt="image-20220719124003688" style="zoom:67%;" />
 
 也只有 pom 文件，依赖创建的 autoconfigurer 项目
 
