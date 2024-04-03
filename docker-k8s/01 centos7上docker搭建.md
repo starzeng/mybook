@@ -66,7 +66,8 @@ docker-scan-plugin.x86_64       0.8.0-3.el7                    @docker-ce-stable
 {
    "registry-mirrors": [
        "https://fwprcl4o.mirror.aliyuncs.com",
-       "http://hub-mirror.c.163.com"
+       "http://hub-mirror.c.163.com",
+       "https://mirror.baidubce.com"
    ]
 }
 EOF
